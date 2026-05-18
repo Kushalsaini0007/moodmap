@@ -1,0 +1,118 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/utils/supabase";
+
+export function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = useMemo(
+    () => searchParams.get("next") ?? "/dashboard",
+    [searchParams],
+  );
+  const errorParam = searchParams.get("error");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(
+    errorParam === "auth"
+      ? "Something went wrong with sign-in. Please try again."
+      : null,
+  );
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (signInError) {
+      setError(signInError.message);
+      return;
+    }
+
+    router.replace(next.startsWith("/") ? next : "/dashboard");
+    router.refresh();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error ? (
+        <p
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      <div className="space-y-2 text-left">
+        <label
+          htmlFor="login-email"
+          className="block text-sm font-medium text-slate-700"
+        >
+          Email
+        </label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-sm outline-none ring-indigo-200 transition-shadow placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4"
+          placeholder="you@example.com"
+        />
+      </div>
+
+      <div className="space-y-2 text-left">
+        <label
+          htmlFor="login-password"
+          className="block text-sm font-medium text-slate-700"
+        >
+          Password
+        </label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-sm outline-none ring-indigo-200 transition-shadow placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4"
+          placeholder="••••••••"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full rounded-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:pointer-events-none disabled:opacity-60"
+      >
+        {loading ? "Signing in…" : "Sign in"}
+      </button>
+
+      <p className="text-center text-sm text-slate-600">
+        New here?{" "}
+        <Link
+          href="/signup"
+          className="font-semibold text-indigo-600 underline-offset-2 transition-colors hover:text-indigo-700 hover:underline"
+        >
+          Create an account
+        </Link>
+      </p>
+    </form>
+  );
+}
