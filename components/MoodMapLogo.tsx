@@ -30,15 +30,15 @@ export function MoodMapLogo({
     size === "sm" ? "text-base font-semibold" : "text-lg font-bold";
 
   const content = (
-    <>
-      <LogoBadge size={size} />
-      <span
-        className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent ${textSize} tracking-tight`}
-      >
-        MoodMap AI
-      </span>
-    </>
-  );
+  <>
+    <img src="/logo.png" alt="Logo" className="h-9 w-9 object-contain rounded-xl" />
+    <span>
+      className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent ${textSize} tracking-tight`}
+    >
+      MoodMap AI
+    </span>
+  </>
+);
 
   const wrapperClass = `flex items-center gap-2.5 ${className}`;
 
